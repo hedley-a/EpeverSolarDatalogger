@@ -18,12 +18,12 @@
 ;-------------------------------------------------------------------------------------------;
 ;;pinouts; 12F683																			;
 									; 1 5Volt												;
-#define		ESP_BUSY		GPIO,5	; 2 INPUT active High									;
-#define		BELL_IN			GPIO,4	; 3 INPUT active LOW doorbell pulse		 				;
+#define		ESP_RST			GPIO,5	; 2 OUTPUT active High									;
+#define		BELL_SW_IN		GPIO,4	; 3 INPUT active LOW doorbell pulse		 				;
 ;			MCLR		    GPIO,3	; 4 NC													;
-#define		ESP_RST			GPIO,2	; 5 OUT Host controller RST 20 Second or Bell			;
+#define		ESP_BUSY		GPIO,2	; 5 INPUT Host controller RST 20 Second or Bell			;
 #define		DLY_TIME	   	GPIO,1	; 4 INPUT Select delay time: 20/2 seconds				;
-#define		DOORBELL_TRUE	GPIO,0	; 7 OUT, HIGH = DoorBell INPUT							;
+#define		BELL_SW_TRUE	GPIO,0	; 7 OUT, HIGH = DoorBell INPUT							;
 					  				; 8 OV													;
 																							;
 ;********* CONSTANT VALUES******************************************************************;
@@ -54,7 +54,7 @@ _main_start
 	; goto  	_osc_check	  ; need a WDT in case this blocks
      movlw	0x00
      movwf  ANSEL         ; Make all ports as digital I/O
- 	 movlw	b'00110010'   ; GP5 1 GP4 1 GP3 X GP2 0 GP1 1 GP0 0
+ 	 movlw	b'00010110'   ; GP5 0 GP4 1 GP3 X GP2 1 GP1 1 GP0 0
 	 movwf	TRISIO		  ; set I/O PORT A
 	 movlw  b'00000000'	  ; GP4 falling edge Int enabled
 	 movwf	OPTION_REG	  ; WPU_EN FE_INT
@@ -66,7 +66,7 @@ _main_start
      movwf  T1CON		  ;Set  Prescale=4, TMR1=on. 
      movlw  b'00000111'
      movwf  CMCON0        ; Turn off Comparator (GP0, GP1, GP2
-	 movlw 	b'00000100'	  ; sets outputs
+	 movlw 	b'00100000'	  ; sets outputs
 	 movwf	SHADio
 	 movwf	GPIO
 
@@ -83,16 +83,17 @@ _main_loop:
 		movlw	h'A4'
 		movwf	TMR1L
 		bcf		PIR1,0			; clear TMR1 overflow flag 
-		bsf		SHADio,2		; Clear ESP8266 reset
+		bsf		SHADio,5		; Clear ESP8266 reset
 		movfw	SHADio
 		movwf	GPIO								   	
 	
 _time_loop:
-		btfsc 	GPIO,5			;ESP_BUSY GPIO,5	; 2 INPUT active High
+		btfsc 	GPIO,2			;ESP_BUSY GPIO,5	; 2 INPUT active High
 		goto	_main_loop		; reset timer1 ensures 20 second delay from BUSY clear 
 		btfss	GPIO,4			;BELL_IN  GPIO,4	; 3 INPUT active LOW doorbell pulse
 		goto	_bell_switch
 		btfss	PIR1,0			; Poll TMR1 overflow flag
+
  		goto	_time_loop		; just loop...
 ; reset timer 1 and then service outputs 
 		movlw	h'68'
@@ -100,11 +101,11 @@ _time_loop:
 		movlw	h'A4'
 		movwf	TMR1L
 		bcf		PIR1,0			; clear TMR1 overflow flag - 20 Seconds from here...
-		bcf		SHADio,2		;GPIO,2	; 5 OUT Host controller RST 20 Second or Bell
+		bcf		SHADio,5		;GPIO,5	; 5 OUT Host controller RST 20 Second or Bell
 		movfw	SHADio
 		movwf	GPIO			; Reset ESP8266
 		call 	Dly_10mS
-		bsf		SHADio,2
+		bsf		SHADio,5
 		movfw	SHADio
 		movwf	GPIO     		; Clear reset
 		call	Dly_500mS		; ensure time to service routines 
@@ -112,20 +113,20 @@ _time_loop:
 
 
 _bell_switch:
-		bsf		SHADio,0			;DOORBELL_TRUE	GPIO,0	; 7 OUT, HIGH = DoorBell INPUT
+		bsf		SHADio,0		;DOORBELL_TRUE	GPIO,0	; 7 OUT, HIGH = DoorBell INPUT
 		movfw	SHADio
 		movwf	GPIO
 		call 	Dly_10mS
-		bcf		SHADio,2			;ESP_RST GPIO,2	; 5 OUT Host controller RST 
+		bcf		SHADio,5		;ESP_RST GPIO,5	 OUT Host controller RST 
 		movfw	SHADio
 		movwf	GPIO
 		call 	Dly_10mS
-		bsf		SHADio,2			; Clear reset
+		bsf		SHADio,5			; Clear reset
 		movfw	SHADio
 		movwf	GPIO
 ; wireless doorbell - 5 pulses period 650mS *1500 mS* - Debounce 1800mS
-		call 	Dly_1800
 ;// Blocking delay allows ESP8266 to execute its code
+		call 	Dly_1800
 		bcf    	SHADio,0
 		movfw	SHADio
 		movwf	GPIO
