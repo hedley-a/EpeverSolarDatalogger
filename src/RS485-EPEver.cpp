@@ -2,7 +2,7 @@
  *    RS485 TO  WIFI ADAPTOR CODE
  *    https://github.com/chickey/RS485-WiFi-EPEver
  *    by Colin Hickey 2021
- * 
+ *    Prrof of concept - Sleep managed by ESP timer D0 Change used to  reset via 12F683
  *    This code is designed to work with the specific board designed by meself which is on sale at tindie and my own website
  *    https://store.eplop.co.uk/product/epever-rs485-to-wifi-adaptor-new-revision/
  *    https://www.tindie.com/products/plop211/epever-rs485-to-wifi-adaptor-v15/
