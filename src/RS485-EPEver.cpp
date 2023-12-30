@@ -34,7 +34,7 @@
 #include <Updater.h>
 
 const char* ssid     = "ESP8266-Datalogger";
-const char* password = "super16lative";
+const char* password = "password";
 const char* hostname = "datalogger";
 const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 4, 1);
