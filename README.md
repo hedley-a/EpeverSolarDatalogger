@@ -1,15 +1,21 @@
-# ESP82XX based datalogger for EPEver Solar CC
-- Thanks to https://github.com/softwarecrash/EPEver2MQTT 
+# ESP8266 based datalogger for EPEver Solar CC
+- Thanks to https://github.com/chickey/RS485-WiFi-EPEver
 
 
 # Features:
-- set up over captive portal
-- Config in webinterface
-- Firmware update via webinterface
-- set Device time from computer time
-- debug over WebSerial (no need to connect to a PC with a FTDI-Adapter)
-- with Teapod
-
+Hardware Changes:
+ *    To Add: Microchip 12F683 to time wake (reset) from sleep and reset on external input
+ *    Logging: will be saving homeopathic amounts of data, 4 bytes hourly  - 8 bytes daily,  
+ *    Just use EEPROM? space for 512 days of daily data. Write endurance 10,000 days
+ *    RTC memory enough for last two days worth of hourly data..maybe pop some into EEPROM
+ *    Software Changes:
+ *    WiFi-GUI as AP - no LAN so direct GUI connection to mobile device - implemented 20/12/23
+ *    Powersave: ESP runs once to log load and solar power: reset every 40 seconds by 12F683
+ *    Epever RTC used hourly to save watt/hour figures to FRAM
+ *    If load state toggled - ESP+wifi+GUI powered for 10 mins (use Epever RTC to time this?)
+ *    Managed by GUI banner with timeout - reset by GUI pushbutton?
+ *    Midday Load OFF - every day - 
+-
 ![grafik](https://github.com/hedley-a/EPEverDatalogger/assets/30367667/bc1038a8-85d1-49f0-b62f-6d7b42dab50c.png)
 
 ![grafik](https://github.com/hedley-a/EPEverDatalogger/assets/30367667/a847ab49-01aa-47ac-b780-41ef428c1dc6.png)
